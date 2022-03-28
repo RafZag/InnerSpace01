@@ -1,0 +1,44 @@
+story {
+    storyStages: [],
+}
+
+
+storyStage {
+    sceneObjects: [],
+    stageCointainer: new THREE.Object3D(),
+    moveForwardThreshold: 350,
+    moveBackThreshold: -250,
+    transitionSpeed: 6,
+    flyRange: 500,
+};
+
+particleObject {
+    parentContainer;
+    position = new THREE.Vector3();
+    rotation = new THREE.Vector3();
+    
+    scale = 1.0;
+    targetPosition = new THREE.Vector3();
+    targetRotation = new THREE.Vector3();
+    targetScale = 1.0;
+
+    color;
+    spinRate = 0.2;
+    floatRate = 0.5;    
+    visible = true;    
+    modelURL;
+
+    particleParams = {
+        particleColor: 0x4fcfae,
+        particleCount: 20000,
+        particleCntMult: 65,
+        particleSize: 0.2,
+        particleSizeMult: 0.44,
+        particleSizeVariation: 0.025,
+        particlesWobble: 0.08,
+        wobbleSpeed: 0.03,
+     };
+
+  MAX_PARTICLES = 500000;
+  MAX_SIZE = 6;
+}
