@@ -9,7 +9,7 @@ void main() {
   float c = (sin(gl_PointCoord.x * 3.141592) + sin(gl_PointCoord.y * 3.141592)) / 2.;
   vec3 s = mix(rimColor, vColor, c);
   //float alpha = -(0.1 * dist - 0.5)*(0.1 * dist - 0.5) + 1.;
-  float alpha = 1. * 500. / (dist*dist);
+  float alpha = 1. * 1000. / (dist*dist);
     gl_FragColor = vec4(s, alpha);
 }`;
 export default particleFragmentShader;

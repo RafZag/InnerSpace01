@@ -5,10 +5,17 @@ import particleVertexShader from "./shaders/particleVertexShader.js";
 import particleFragmentShader from "./shaders/particleFragmentShader.js";
 
 class particleObject {
+  objectContainer = new THREE.Object3D();
   parentContainer;
   position = new THREE.Vector3();
   rotation = new THREE.Vector3();
+  startPosition = new THREE.Vector3();
+  startRotation = new THREE.Vector3();
+  targetPosition = new THREE.Vector3();
+  targetRotation = new THREE.Vector3();
   scale = 1.0;
+  startScale = 1.0;
+  targetScale = 1.0;
   spinRate = 0.2;
   floatRate = 0.5;
   uuid;
@@ -46,7 +53,7 @@ class particleObject {
     this.parentContainer = parentContainer;
     this.particleParams.particleColor = new THREE.Color(col);
     this.modelURL = model;
-    this.buildParticles();
+    // this.buildParticles();
   }
 
   buildParticles() {
@@ -81,25 +88,26 @@ class particleObject {
       vertexColors: true,
     });
 
-    const sprite = new THREE.TextureLoader().load("img/pointAlpha.png");
+    // const sprite = new THREE.TextureLoader().load("img/pointAlpha.png");
 
-    let mat = new THREE.PointsMaterial({
-      size: 0.1,
-      sizeAttenuation: true,
-      // map: sprite,
-      // blending: THREE.AdditiveBlending,
-      depthTest: false,
-      alphaTest: 0.1,
-      alphaMap: sprite,
-      transparent: true,
-    });
-    mat.color.set(this.particleParams.particleColor);
+    // let mat = new THREE.PointsMaterial({
+    //   size: 0.1,
+    //   sizeAttenuation: true,
+    //   // map: sprite,
+    //   // blending: THREE.AdditiveBlending,
+    //   depthTest: false,
+    //   alphaTest: 0.1,
+    //   alphaMap: sprite,
+    //   transparent: true,
+    // });
+    // mat.color.set(this.particleParams.particleColor);
 
     this.particles = new THREE.Points(this.geometry, shaderMaterial);
     this.uuid = this.particles.uuid;
     this.particles.frustumCulled = false; ////  object visibility fixed
 
-    this.parentContainer.add(this.particles);
+    this.objectContainer.add(this.particles);
+    this.parentContainer.add(this.objectContainer);
     this.loadMesh(this.modelURL);
   }
 
@@ -194,33 +202,33 @@ class particleObject {
 
   setScale(sc) {
     this.scale = sc;
-    this.particles.scale.x = sc;
-    this.particles.scale.y = sc;
-    this.particles.scale.z = sc;
+    this.objectContainer.scale.x = sc;
+    this.objectContainer.scale.y = sc;
+    this.objectContainer.scale.z = sc;
   }
 
   setPosition(vec) {
     this.position = vec;
-    this.particles.position.x = vec.x;
-    this.particles.position.y = vec.y;
-    this.particles.position.z = vec.z;
+    this.objectContainer.position.x = vec.x;
+    this.objectContainer.position.y = vec.y;
+    this.objectContainer.position.z = vec.z;
   }
 
   setRotation(vec) {
     this.rotation = vec;
-    this.particles.rotation.x = vec.x;
-    this.particles.rotation.y = vec.y;
-    this.particles.rotation.z = vec.z;
+    this.objectContainer.rotation.x = vec.x;
+    this.objectContainer.rotation.y = vec.y;
+    this.objectContainer.rotation.z = vec.z;
   }
 
   update() {
     // console.log(performance.now());
-    this.spin(this.spinRate);
-    if (this.scale != this.particles.scale.x) {
-      const sc = this.scale - this.particles.scale.x;
-      this.particles.scale.x += sc * 0.2;
-      this.particles.scale.y += sc * 0.2;
-      this.particles.scale.z += sc * 0.2;
+    // this.spin(this.spinRate);
+    if (this.scale != this.objectContainer.scale.x) {
+      const sc = this.scale - this.objectContainer.scale.x;
+      this.objectContainer.scale.x += sc * 0.2;
+      this.objectContainer.scale.y += sc * 0.2;
+      this.objectContainer.scale.z += sc * 0.2;
     }
     // this.float(this.floatRate);
     this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed * 0.0000004;
