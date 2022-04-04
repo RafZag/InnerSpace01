@@ -18,9 +18,12 @@ class particleObject {
   targetScale = 1.0;
   spinRate = 0.2;
   floatRate = 0.5;
+  showPercent = 0;
+  showStep = 0.01;
   uuid;
 
-  visible = true;
+  visible = false;
+  show = false;
   particles; // THREE.Points(); - main object added to scene
   vertices = []; // particles verts
   surfaceVerts = [];
@@ -42,8 +45,9 @@ class particleObject {
     particleSize: 0.2,
     particleSizeMult: 0.44,
     particleSizeVariation: 0.025,
-    particlesWobble: 0.08,
-    wobbleSpeed: 0.03,
+    particlesWobble: 0.04,
+    wobbleSpeed: 0.002,
+    surfaceNoise: 0.02,
   };
 
   MAX_PARTICLES = 500000;
@@ -75,6 +79,7 @@ class particleObject {
       rimColor: { value: new THREE.Color("rgb(255, 255, 255)") },
       time: { value: 0.0 },
       wobble: { value: this.particleParams.particlesWobble },
+      surfaceNoise: { value: this.particleParams.surfaceNoise },
     };
 
     const shaderMaterial = new THREE.ShaderMaterial({
@@ -87,20 +92,6 @@ class particleObject {
       transparent: true,
       vertexColors: true,
     });
-
-    // const sprite = new THREE.TextureLoader().load("img/pointAlpha.png");
-
-    // let mat = new THREE.PointsMaterial({
-    //   size: 0.1,
-    //   sizeAttenuation: true,
-    //   // map: sprite,
-    //   // blending: THREE.AdditiveBlending,
-    //   depthTest: false,
-    //   alphaTest: 0.1,
-    //   alphaMap: sprite,
-    //   transparent: true,
-    // });
-    // mat.color.set(this.particleParams.particleColor);
 
     this.particles = new THREE.Points(this.geometry, shaderMaterial);
     this.uuid = this.particles.uuid;
@@ -117,7 +108,8 @@ class particleObject {
       function (gltf) {
         // this.parentContainer.add(gltf.scene);
         this.surfaceMesh = gltf.scene.children[0]; // Object
-        // console.log(gltf);
+        // console.log(url);
+        console.log(gltf);
         this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute("color").build();
         this.sampleSurface();
       }.bind(this),
@@ -150,10 +142,11 @@ class particleObject {
       positions[index++] = this.surfaceVerts[i].z;
     }
     this.particles.geometry.attributes.position.needsUpdate = true;
+    this.resample(0);
   }
 
-  resample() {
-    this.particles.geometry.setDrawRange(0, this.particleParams.particleCount);
+  resample(n) {
+    this.particles.geometry.setDrawRange(0, n);
     // this.geometry.attributes.position.needsUpdate = true;
   }
 
@@ -221,7 +214,27 @@ class particleObject {
     this.objectContainer.rotation.z = vec.z;
   }
 
+  showMe() {
+    if (!this.visible) {
+      this.showPercent += this.showStep;
+      let n = Math.ceil(this.particleParams.particleCount * this.showPercent);
+      this.resample(n);
+      if (n >= this.particleParams.particleCount) this.visible = true;
+    }
+  }
+
+  hideMe() {
+    if (this.visible) {
+      this.showPercent -= this.showStep;
+      let n = Math.ceil(this.particleParams.particleCount * this.showPercent);
+      this.resample(n);
+      if (n <= 0) this.visible = false;
+    }
+  }
+
   update() {
+    if (this.show) this.showMe();
+    else this.hideMe();
     // console.log(performance.now());
     // this.spin(this.spinRate);
     if (this.scale != this.objectContainer.scale.x) {
@@ -231,7 +244,7 @@ class particleObject {
       this.objectContainer.scale.z += sc * 0.2;
     }
     // this.float(this.floatRate);
-    this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed * 0.0000004;
+    this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
     this.uniformsValues["wobble"].value = this.particleParams.particlesWobble;
     this.uniformsValues.needsUpdate = true;
   }

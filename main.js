@@ -138,8 +138,8 @@ function init() {
 
   //---------------- GUI --------------------------
 
-  // stats = new Stats();
-  // document.body.appendChild(stats.dom);
+  stats = new Stats();
+  document.body.appendChild(stats.dom);
 
   const gui = new GUI();
   gui.add(params, "camControl");
@@ -167,32 +167,35 @@ function init() {
 
   scene.add(storyStage.stageCointainer);
 
-  // buildSpaceParticles();
-  buildScene();
   ambParticles = new ambientParticles(scene);
+  buildScene();
 }
 
 //---------------- Animate --------------------------
 
 function animate(time) {
   plusZ += (0 - plusZ) * 0.05;
-
-  if (storyStage.animationProgress > 2) {
-    plusZ = 0;
-    storyStage.animationProgress = 2;
-  }
-
-  if (storyStage.animationProgress < 0) {
-    plusZ = 0;
-    storyStage.animationProgress = 0;
-  }
-  // console.log(storyStage.animationProgress);
-  storyStage.animationProgress += plusZ;
   if (!freeCam) {
+    if (storyStage.animationProgress > 2) {
+      plusZ = 0;
+      storyStage.animationProgress = 2;
+    }
+
+    if (storyStage.animationProgress < 0) {
+      plusZ = 0;
+      storyStage.animationProgress = 0;
+    }
+
+    let animx = storyStage.animationProgress / 2;
+    // console.log(animx * animx);
+
+    storyStage.animationProgress += plusZ * (-(animx * animx) * 0.8 + 1);
+
     if (storyStage.animationProgress > 0 && storyStage.animationProgress <= 1) {
       let v = new THREE.Vector3();
       v.lerpVectors(tCell.startPosition, tCell.targetPosition, storyStage.animationProgress);
       tCell.setPosition(v);
+      if (storyStage.animationProgress == 1) tCell.setPosition(tCell.targetPosition);
 
       let c = new THREE.Vector3();
       c.lerpVectors(storyStage.cameraStart, storyStage.cameraEnd, storyStage.animationProgress);
@@ -202,18 +205,13 @@ function animate(time) {
       camera.lookAt(scene.position);
       camera.updateMatrixWorld();
     }
-    if (storyStage.animationProgress > 1 && storyStage.animationProgress <= 2) {
-      let b = new THREE.Vector3();
-      b.lerpVectors(bars.startPosition, bars.targetPosition, storyStage.animationProgress - 1);
-      bars.setPosition(b);
-    }
   }
 
-  if (storyStage.animationProgress > 1.9) barcode.particles.visible = true;
-  else barcode.particles.visible = false;
+  if (storyStage.animationProgress > 1.2) barcode.show = true;
+  else barcode.show = false;
 
-  if (storyStage.animationProgress > 1) bars.particles.visible = true;
-  else bars.particles.visible = false;
+  if (storyStage.animationProgress > 1) bars.show = true;
+  else bars.show = false;
 
   // camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
   // camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
@@ -265,7 +263,7 @@ function animate(time) {
   requestAnimationFrame(animate);
   render();
   if (freeCam) controls.update();
-  // stats.update();
+  stats.update();
   TWEEN.update(time);
 }
 
@@ -345,72 +343,85 @@ function onWindowResize() {
 
 function buildScene() {
   storyStage.stageCointainer.rotation.z = -Math.PI / 12;
+
   const cancer = new particleObject(storyStage.stageCointainer, "gltf/scene01/cancer.glb", colorPallete[3]);
   cancer.particleParams.particleCount = 200000;
-  cancer.particleParams.particleSize = 0.2;
+  cancer.particleParams.particleSize = 4;
+  cancer.particleParams.surfaceNoise = 0.02;
   cancer.buildParticles();
   cancer.setScale(0.5);
   cancer.setPosition(new THREE.Vector3(17, 0, 0));
   cancer.setRotation(new THREE.Vector3(Math.PI / 2, 0, Math.PI / 2));
+  cancer.show = true;
   storyStage.sceneObjects.push(cancer);
 
   tCell = new particleObject(storyStage.stageCointainer, "gltf/scene01/tCellOuterPart.glb", colorPallete[5]);
   tCell.particleParams.particleCount = 50000;
-  tCell.particleParams.particleSize = 0.2;
+  tCell.particleParams.particleSize = 4;
+  tCell.particleParams.surfaceNoise = 0.02;
   tCell.buildParticles();
   tCell.setScale(0.5);
   tCell.setPosition(new THREE.Vector3(-44, 0, 0));
   tCell.startPosition = tCell.position;
   tCell.targetPosition = new THREE.Vector3(-14, 0, 0);
+  tCell.show = true;
   storyStage.sceneObjects.push(tCell);
 
   const tCellNucleus = new particleObject(storyStage.stageCointainer, "gltf/scene01/tCellNucleus.glb", colorPallete[3]);
   tCellNucleus.particleParams.particleCount = 10000;
-  tCellNucleus.particleParams.particleSize = 0.2;
+  tCellNucleus.particleParams.particleSize = 4;
+  tCellNucleus.particleParams.surfaceNoise = 0.02;
   tCellNucleus.buildParticles();
   tCell.objectContainer.add(tCellNucleus.objectContainer);
   tCellNucleus.setScale(1);
   tCellNucleus.setPosition(new THREE.Vector3(0, 0, 0));
+  tCellNucleus.show = true;
+  storyStage.sceneObjects.push(tCellNucleus);
 
   const tCellReceptor = new particleObject(storyStage.stageCointainer, "gltf/scene01/receptorTcell.glb", colorPallete[5]);
   tCellReceptor.particleParams.particleCount = 4000;
-  tCellReceptor.particleParams.particleSize = 0.2;
+  tCellReceptor.particleParams.particleSize = 3;
+  tCellReceptor.particleParams.surfaceNoise = 0;
   tCellReceptor.buildParticles();
   tCell.objectContainer.add(tCellReceptor.objectContainer);
   tCellReceptor.setScale(1);
   tCellReceptor.setPosition(new THREE.Vector3(18, 0, 0));
   tCellReceptor.setRotation(new THREE.Vector3(Math.PI / 2, 0, Math.PI / 2));
+  tCellReceptor.show = true;
+  storyStage.sceneObjects.push(tCellReceptor);
 
   const cancerReceptor = new particleObject(storyStage.stageCointainer, "gltf/scene01/receptorCancer.glb", colorPallete[3]);
   cancerReceptor.particleParams.particleCount = 4000;
-  cancerReceptor.particleParams.particleSize = 0.2;
+  cancerReceptor.particleParams.particleSize = 3;
+  cancerReceptor.particleParams.surfaceNoise = 0;
   cancerReceptor.buildParticles();
   cancerReceptor.setScale(0.5);
   cancerReceptor.setPosition(new THREE.Vector3(1, 0, 0));
   cancerReceptor.setRotation(new THREE.Vector3(Math.PI / 2, 0, Math.PI / 2));
+  cancerReceptor.show = true;
   storyStage.sceneObjects.push(cancerReceptor);
 
   bars = new particleObject(storyStage.stageCointainer, "gltf/scene01/bars.glb", colorPallete[0]);
   bars.particleParams.particleCount = 5000;
-  bars.particleParams.particleSize = 0.2;
+  bars.particleParams.particleSize = 3;
+  bars.particleParams.surfaceNoise = 0;
   bars.buildParticles();
   bars.setScale(0.5);
-  bars.setPosition(new THREE.Vector3(20, 0, 0));
+  bars.setPosition(new THREE.Vector3(-3, 0, 0));
   bars.startPosition = bars.position;
   bars.targetPosition = new THREE.Vector3(-3, 0, 0);
   bars.setRotation(new THREE.Vector3(Math.PI / 2, 0, Math.PI / 2));
-  bars.particles.visible = false;
   storyStage.sceneObjects.push(bars);
 
   barcode = new particleObject(storyStage.stageCointainer, "gltf/scene01/barcode.glb", colorPallete[0]);
   barcode.particleParams.particleCount = 1000;
-  barcode.particleParams.particleSize = 0.2;
+  barcode.particleParams.particleSize = 3;
+  barcode.particleParams.surfaceNoise = 0;
   barcode.buildParticles();
   barcode.setScale(0.5);
   barcode.setPosition(new THREE.Vector3(-2.4, 0, 0));
   barcode.startPosition = bars.position;
   barcode.targetPosition = new THREE.Vector3(0, 0, 0);
   barcode.setRotation(new THREE.Vector3(Math.PI / 2, 0, Math.PI / 2));
-  barcode.particles.visible = false;
-  storyStage.sceneObjects.push(bars);
+  storyStage.sceneObjects.push(barcode);
 }
