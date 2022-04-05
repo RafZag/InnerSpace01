@@ -21,6 +21,7 @@ class particleObject {
   showPercent = 0;
   showStep = 0.01;
   uuid;
+  name;
 
   visible = false;
   show = false;
@@ -108,13 +109,14 @@ class particleObject {
       function (gltf) {
         // this.parentContainer.add(gltf.scene);
         this.surfaceMesh = gltf.scene.children[0]; // Object
+
         // console.log(url);
-        console.log(gltf);
+        // console.log(this.surfaceMesh);
         this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute("color").build();
         this.sampleSurface();
       }.bind(this),
       function (xhr) {
-        console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+        // console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
       },
       function (error) {
         console.log("An error happened " + error);
