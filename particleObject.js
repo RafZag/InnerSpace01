@@ -20,6 +20,8 @@ class particleObject {
   floatRate = 0.5;
   showPercent = 0;
   showStep = 0.01;
+  showRangeStrat = 0;
+  showRangeEnd = 1;
   uuid;
   name;
 
@@ -234,18 +236,33 @@ class particleObject {
     }
   }
 
-  update() {
+  mapValue(number, in_min, in_max, out_min, out_max) {
+    return ((number - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
+  }
+
+  update(progress) {
+    if (progress >= this.showRangeStrat && progress <= this.showRangeEnd) this.show = true;
+    else this.show = false;
+
     if (this.show) this.showMe();
     else this.hideMe();
+
+    const p = this.mapValue(progress, 0, 0.5, 0, 1);
+    let posVec = new THREE.Vector3();
+    posVec.lerpVectors(this.startPosition, this.targetPosition, p);
+    if (p < 1) this.setPosition(posVec);
+    // if (p == 1) this.setPosition(this.targetPosition);
+
     // console.log(performance.now());
     // this.spin(this.spinRate);
-    if (this.scale != this.objectContainer.scale.x) {
-      const sc = this.scale - this.objectContainer.scale.x;
-      this.objectContainer.scale.x += sc * 0.2;
-      this.objectContainer.scale.y += sc * 0.2;
-      this.objectContainer.scale.z += sc * 0.2;
-    }
+    // if (this.scale != this.objectContainer.scale.x) {
+    //   const sc = this.scale - this.objectContainer.scale.x;
+    //   this.objectContainer.scale.x += sc * 0.2;
+    //   this.objectContainer.scale.y += sc * 0.2;
+    //   this.objectContainer.scale.z += sc * 0.2;
+    // }
     // this.float(this.floatRate);
+
     this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
     this.uniformsValues["wobble"].value = this.particleParams.particlesWobble;
     this.uniformsValues.needsUpdate = true;

@@ -67,6 +67,8 @@ class storyStage {
         tmpObj.startRotation = tmpObj.rotation;
         tmpObj.targetRotation = new THREE.Vector3(item.targetRotation[0], item.targetRotation[1], item.targetRotation[2]);
         tmpObj.show = true;
+        tmpObj.showRangeStrat = item.showRangeStrat;
+        tmpObj.showRangeEnd = item.showRangeEnd;
         this.sceneObjects.push(tmpObj);
       }.bind(this)
     );
@@ -76,19 +78,16 @@ class storyStage {
   }
 
   update(animProgress) {
-    // if (animProgress > 1.2) this.barcode.show = true;
-    // else this.barcode.show = false;
+    if (animProgress >= 1) animProgress = 1;
 
-    // if (animProgress > 1) this.bars.show = true;
-    // else this.bars.show = false;
+    if (animProgress > 0.7) this.sceneObjects[5].show = true;
+    else this.sceneObjects[5].show = false;
+
+    if (animProgress >= 0.9) this.sceneObjects[6].show = true;
+    else this.sceneObjects[6].show = false;
 
     for (let i = 0; i < this.sceneObjects.length; i++) {
-      let v = new THREE.Vector3();
-      v.lerpVectors(this.sceneObjects[i].startPosition, this.sceneObjects[i].targetPosition, animProgress);
-      this.sceneObjects[i].setPosition(v);
-      if (animProgress == 1) this.sceneObjects[i].setPosition(this.sceneObjects[i].targetPosition);
-
-      this.sceneObjects[i].update();
+      this.sceneObjects[i].update(animProgress);
     }
   }
 }
