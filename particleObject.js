@@ -251,7 +251,7 @@ class particleObject {
     let posVec = new THREE.Vector3();
     posVec.lerpVectors(this.startPosition, this.targetPosition, p);
     if (p < 1) this.setPosition(posVec);
-    // if (p == 1) this.setPosition(this.targetPosition);
+    if (p == 1) this.setPosition(this.targetPosition);
 
     // console.log(performance.now());
     // this.spin(this.spinRate);

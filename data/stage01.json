@@ -4,9 +4,9 @@
     "end": [2, -3, 15]
   },
   "stageContainer": {
-    "startPosition": [0, 0, 0],
-    "targetPosition": [0, 0, 0],
-    "startRotation": [0, 0, -0.2617],
+    "startPosition": [0, 10, 0],
+    "targetPosition": [0, 0, 35],
+    "startRotation": [0, 0.785, -0.2617],
     "targetRotation": [0, 0, -0.2617]
   },
   "sceneObjs": [
@@ -32,16 +32,16 @@
       "name": "cancerReceptor",
       "gltfFile": "gltf/scene01/receptorCancer.glb",
       "color": 3,
-      "parent": "stageContainer",
+      "parent": "cancer",
       "particleCount": 4000,
       "particleSize": 3,
       "surfaceNoise": 0,
-      "startPosition": [1, 0, 0],
-      "targetPosition": [1, 0, 0],
-      "startRotation": [1.57, 0, 1.57],
-      "targetRotation": [1.57, 0, 1.57],
-      "startScale": 0.5,
-      "targetScale": 0.5,
+      "startPosition": [0, 32, 0],
+      "targetPosition": [0, 32, 0],
+      "startRotation": [0, 0, 0],
+      "targetRotation": [0, 0, 0],
+      "startScale": 1,
+      "targetScale": 1,
       "show": true,
       "showRangeStrat": 0,
       "showRangeEnd": 1

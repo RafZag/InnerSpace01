@@ -2,8 +2,6 @@ import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/controls/OrbitControls.js";
 import { GUI } from "https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil-gui.module.min.js";
 import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js";
-import { particleObject } from "./particleObject.js";
-import { ambientParticles } from "./ambientParticles.js";
 import { storyStage } from "./storyStage.js";
 
 ///////////////////////////// BROWSER CHECK
@@ -18,7 +16,6 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 }
 
 let camera, scene, renderer, stats, controls;
-let ambParticles;
 let stage01;
 let animationProgress = 0;
 
@@ -28,7 +25,7 @@ let transitionAnim = false;
 let flyDistance = 0;
 
 let darkMode = false;
-let freeCam = true;
+let freeCam = false;
 
 let mouse = new THREE.Vector3(0, 0, 0.5);
 let camTargetRotX = 0;
@@ -37,7 +34,7 @@ let camTargetRotY = 0;
 const params = {
   camControl: function () {
     freeCam = !freeCam;
-    // controls.enabled = freeCam;
+    controls.enabled = freeCam;
   },
   camRot: 0.1,
   sizeMult: 0.44,
@@ -66,12 +63,12 @@ const params = {
 
 function startAnim(e) {
   if (e.key == " ") {
-    freeCam = false;
+    // freeCam = false;
     if (params.animTween == 1) {
-      animateTween.to({ animTween: 0 }).start();
+      animateTween.to({ animTween: 0 }, 2500).start();
     }
     if (params.animTween == 0) {
-      animateTween.to({ animTween: 1 }).start();
+      animateTween.to({ animTween: 1 }, 2500).start();
     }
   }
 }
@@ -80,7 +77,7 @@ let animateTween = new TWEEN.Tween(params)
   .to({ animTween: 1 })
   .easing(TWEEN.Easing.Quadratic.InOut)
   .onComplete(() => {
-    freeCam = true;
+    // freeCam = true;
   })
   .onUpdate(() => {
     animationProgress = params.animTween;
@@ -101,9 +98,8 @@ function init() {
   //---------------- Camera --------------------------
 
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 3000);
-  camera.position.set(stage01.cameraStart.x, stage01.cameraStart.y, stage01.cameraStart.z);
-  camera.lookAt(scene.position);
-  camera.rotation.z = -Math.PI;
+  let c = new THREE.Vector3();
+  camera.position.set(0, 0, 50);
 
   //---------------- Lights --------------------------
 
@@ -128,10 +124,10 @@ function init() {
 
   //---------------- Controls --------------------------
 
-  // controls = new OrbitControls(camera, renderer.domElement);
-  // controls.enabled = freeCam;
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enabled = freeCam;
   // controls.target = new THREE.Vector3(0, 18, 0);
-  // controls.enableDamping = true;
+  controls.enableDamping = true;
   // controls.addEventListener("change", () => {
   //   for (let i = 0; i < sceneObjects.length; i++) {
   //     const pos = sceneObjects[i].position;
@@ -176,22 +172,20 @@ function init() {
   // });
 
   gui.add(params, "changeBG");
-  gui.add(params, "animate");
+  // gui.add(params, "animate");
   gui.close();
 
   ///////////////////// Build scene, add objects
-
-  ambParticles = new ambientParticles(scene);
 }
 
 //---------------- Animate --------------------------
 
 function animate(time) {
-  plusZ += (0 - plusZ) * 0.05;
-
   if (!freeCam) {
-    let animx = animationProgress;
-    animationProgress += plusZ * (-(animx * animx) * 0.8 + 1);
+    plusZ += (0 - plusZ) * 0.05;
+
+    // let animx = animationProgress;
+    // animationProgress += plusZ * (-(animx * animx) * 0.8 + 1);
 
     if (animationProgress > 1) {
       plusZ = 0;
@@ -202,30 +196,30 @@ function animate(time) {
       plusZ = 0;
       animationProgress = 0;
     }
+
+    camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
+    camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
   }
-  if (animationProgress >= 0 && animationProgress <= 1) {
-    let c = new THREE.Vector3();
-    c.lerpVectors(stage01.cameraStart, stage01.cameraEnd, animationProgress);
-    camera.position.x = c.x;
-    camera.position.y = c.x;
-    camera.position.z = c.z;
-    // camera.lookAt(scene.position);
-    camera.updateMatrixWorld();
-  }
-  camera.lookAt(scene.position);
-  let cameraDirection = new THREE.Vector3();
-  camera.getWorldDirection(cameraDirection);
-  // console.log(cameraDirection);
+  // camera.lookAt(scene.position);
 
-  let direction = new THREE.Vector3();
-  direction.subVectors(scene.position, camera.position);
-  // console.log(direction);
+  // if (animationProgress >= 0 && animationProgress <= 1) {
+  //   let c = new THREE.Vector3();
+  //   c.lerpVectors(stage01.cameraStart, stage01.cameraEnd, animationProgress);
+  //   camera.position.x = c.x;
+  //   camera.position.y = c.x;
+  //   camera.position.z = c.z;
+  //   // camera.lookAt(scene.position);
+  //   camera.updateMatrixWorld();
+  // }
+  // }
+  // let cameraDirection = new THREE.Vector3();
+  // camera.getWorldDirection(cameraDirection);
 
-  camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
-  camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
+  // let direction = new THREE.Vector3();
+  // direction.subVectors(scene.position, camera.position);
 
-  // camera.rotation.x = direction.x;
-  // camera.rotation.y = direction.y;
+  // camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
+  // camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
 
   if (stage01.ready) stage01.update(animationProgress);
 
@@ -282,7 +276,7 @@ function animate(time) {
 
   requestAnimationFrame(animate);
   render();
-  // if (freeCam) controls.update();
+  if (freeCam) controls.update();
   stats.update();
   TWEEN.update(time);
 }
@@ -290,8 +284,8 @@ function animate(time) {
 //---------------- Render --------------------------
 
 function render() {
-  // spaceParticles.rotation.y += 0.0002;
-  // spaceParticles.rotation.x += 0.0002;
+  // ambParticles.rotation.y += 0.0002;
+  // ambParticles.rotation.x += 0.0002;
 
   renderer.render(scene, camera);
 }
@@ -345,7 +339,7 @@ function onDocumentWheel(event) {
   //   storyStd.sceneObjects[i].zoomResample(camera);
   // }
 
-  plusZ += event.deltaY / 20000;
+  if (!freeCam) plusZ += event.deltaY / 20000;
   // console.log(plusZ);
 }
 

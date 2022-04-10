@@ -10,9 +10,9 @@ class ambientParticles {
   frontBirthDistane = -150;
   backBirthDistane = 20;
   flying = false;
+  spinRate = 0.0001;
 
-  horizontalSpread = 300;
-  verticalSpread = 300;
+  pointSpread = 200;
 
   particles; // THREE.Points(); - main object added to scene
   vertices = []; // particles verts
@@ -23,8 +23,24 @@ class ambientParticles {
 
   constructor(cont) {
     this.parentContainer = cont;
-    this.pos.z = -200;
+    // this.pos.z = -200;
     this.buildParticles();
+  }
+
+  getPoint() {
+    var u = Math.random();
+    var v = Math.random();
+    var theta = u * 2.0 * Math.PI;
+    var phi = Math.acos(2.0 * v - 1.0);
+    var r = Math.cbrt(Math.random()) * this.pointSpread;
+    var sinTheta = Math.sin(theta);
+    var cosTheta = Math.cos(theta);
+    var sinPhi = Math.sin(phi);
+    var cosPhi = Math.cos(phi);
+    var x = r * sinPhi * cosTheta;
+    var y = r * sinPhi * sinTheta;
+    var z = r * cosPhi;
+    return { x: x, y: y, z: z };
   }
 
   buildParticles() {
@@ -32,9 +48,13 @@ class ambientParticles {
     const sprite = new THREE.TextureLoader().load("img/pointSprite.png");
 
     for (let i = 0; i < this.particleCount; i++) {
-      const x = this.pos.x + this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
-      const y = this.pos.y + this.verticalSpread * Math.random() - this.verticalSpread / 2;
-      const z = this.frontBirthDistane * Math.random();
+      // const x = this.pos.x + this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
+      // const y = this.pos.y + this.verticalSpread * Math.random() - this.verticalSpread / 2;
+      // const z = this.pos.z + this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
+
+      const x = this.getPoint().x;
+      const y = this.getPoint().y;
+      const z = this.getPoint().z;
 
       //const angle = Math.PI * 2 * Math.random();
       //this.directions.push(Math.cos(angle), Math.sin(angle), Math.random());
@@ -86,7 +106,14 @@ class ambientParticles {
     this.particles.geometry.attributes.position.needsUpdate = true;
   }
 
-  update() {}
+  spin() {
+    this.particles.rotation.y += this.spinRate;
+    this.particles.rotation.x -= this.spinRate * 0.5;
+  }
+
+  update() {
+    this.spin();
+  }
 }
 
 export { ambientParticles };
