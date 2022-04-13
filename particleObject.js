@@ -22,9 +22,12 @@ class particleObject {
   showStep = 0.01;
   showRangeStrat = 0;
   showRangeEnd = 1;
+  animStart = 0;
+  animStop = 1;
   uuid;
   name;
 
+  ready = false;
   visible = false;
   show = false;
   particles; // THREE.Points(); - main object added to scene
@@ -51,6 +54,7 @@ class particleObject {
     particlesWobble: 0.04,
     wobbleSpeed: 0.002,
     surfaceNoise: 0.02,
+    noiseScale: 8,
   };
 
   MAX_PARTICLES = 500000;
@@ -83,6 +87,7 @@ class particleObject {
       time: { value: 0.0 },
       wobble: { value: this.particleParams.particlesWobble },
       surfaceNoise: { value: this.particleParams.surfaceNoise },
+      noiseScale: { value: this.particleParams.noiseScale },
     };
 
     const shaderMaterial = new THREE.ShaderMaterial({
@@ -147,6 +152,7 @@ class particleObject {
     }
     this.particles.geometry.attributes.position.needsUpdate = true;
     this.resample(0);
+    this.ready = true;
   }
 
   resample(n) {
@@ -219,7 +225,7 @@ class particleObject {
   }
 
   showMe() {
-    if (!this.visible) {
+    if (!this.visible && this.ready) {
       this.showPercent += this.showStep;
       let n = Math.ceil(this.particleParams.particleCount * this.showPercent);
       this.resample(n);
@@ -236,8 +242,8 @@ class particleObject {
     }
   }
 
-  mapValue(number, in_min, in_max, out_min, out_max) {
-    return ((number - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
+  mapValue(value, x1, y1, x2, y2) {
+    return ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
   }
 
   update(progress) {
@@ -247,11 +253,22 @@ class particleObject {
     if (this.show) this.showMe();
     else this.hideMe();
 
-    const p = this.mapValue(progress, 0, 0.5, 0, 1);
+    let p;
+
+    // const p = this.mapValue(progress, this.animStart, this.animStop, 0, 1);
+    if (progress >= this.animStart && progress <= this.animStop) {
+      p = (progress - this.animStart) / (this.animStop - this.animStart);
+    }
+
     let posVec = new THREE.Vector3();
     posVec.lerpVectors(this.startPosition, this.targetPosition, p);
     if (p < 1) this.setPosition(posVec);
-    if (p == 1) this.setPosition(this.targetPosition);
+    // if (p == 1) this.setPosition(this.targetPosition);
+
+    let rotVec = new THREE.Vector3();
+    rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
+    if (p < 1) this.setRotation(rotVec);
+    // if (p == 1) this.setRotation(this.targetRotation);
 
     // console.log(performance.now());
     // this.spin(this.spinRate);

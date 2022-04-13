@@ -2,7 +2,7 @@ import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/controls/OrbitControls.js";
 import { GUI } from "https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil-gui.module.min.js";
 import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js";
-import { storyStage } from "./storyStage.js";
+import { storyStage } from "./covidStory/storyStage.js";
 
 ///////////////////////////// BROWSER CHECK
 
@@ -16,7 +16,7 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 }
 
 let camera, scene, renderer, stats, controls;
-let stage01;
+let currentStage;
 let animationProgress = 0;
 
 let plusZ = 0;
@@ -31,10 +31,15 @@ let mouse = new THREE.Vector3(0, 0, 0.5);
 let camTargetRotX = 0;
 let camTargetRotY = 0;
 
+let camPosition = new THREE.Vector3(0, 0, 60);
+
+const tween = eval("TWEEN.Easing.Quadratic.InOut");
+
 const params = {
   camControl: function () {
     freeCam = !freeCam;
     controls.enabled = freeCam;
+    if (!freeCam) camera.position.copy(camPosition);
   },
   camRot: 0.1,
   sizeMult: 0.44,
@@ -44,13 +49,13 @@ const params = {
   changeBG: function () {
     darkMode = !darkMode;
     if (darkMode) {
-      for (let i = 0; i < stage01.sceneObjects.length; i++) {
-        stage01.sceneObjects[i].changeRimColor(new THREE.Color(params.darkBackground));
+      for (let i = 0; i < currentStage.sceneObjects.length; i++) {
+        currentStage.sceneObjects[i].changeRimColor(new THREE.Color(params.darkBackground));
       }
       renderer.setClearColor(params.darkBackground);
     } else {
-      for (let i = 0; i < stage01.sceneObjects.length; i++) {
-        stage01.sceneObjects[i].changeRimColor(new THREE.Color(0xffffff));
+      for (let i = 0; i < currentStage.sceneObjects.length; i++) {
+        currentStage.sceneObjects[i].changeRimColor(new THREE.Color(0xffffff));
       }
       renderer.setClearColor(0, 0);
     }
@@ -65,17 +70,17 @@ function startAnim(e) {
   if (e.key == " ") {
     // freeCam = false;
     if (params.animTween == 1) {
-      animateTween.to({ animTween: 0 }, 2500).start();
+      animateTween.to({ animTween: 0 }, 3000).start();
     }
     if (params.animTween == 0) {
-      animateTween.to({ animTween: 1 }, 2500).start();
+      animateTween.to({ animTween: 1 }, 3000).start();
     }
   }
 }
 
 let animateTween = new TWEEN.Tween(params)
   .to({ animTween: 1 })
-  .easing(TWEEN.Easing.Quadratic.InOut)
+  .easing(tween)
   .onComplete(() => {
     // freeCam = true;
   })
@@ -93,13 +98,11 @@ animate();
 function init() {
   scene = new THREE.Scene();
 
-  stage01 = new storyStage(scene);
-
   //---------------- Camera --------------------------
 
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 3000);
   let c = new THREE.Vector3();
-  camera.position.set(0, 0, 50);
+  camera.position.copy(camPosition);
 
   //---------------- Lights --------------------------
 
@@ -154,28 +157,16 @@ function init() {
 
   const gui = new GUI();
   gui.add(params, "camControl");
-  // const folder1 = gui.addFolder("Particles");
-  // folder1
-  //   .add(params, "sizeMult", 0, 2, 0.01)
-  //   .onChange(() => {
-  //     for (let i = 0; i < storyStd.sceneObjects.length; i++) {
-  //       storyStd.sceneObjects[i].particleParams.particleSizeMult = params.sizeMult;
-  //       storyStd.sceneObjects[i].changeParticleSize();
-  //     }
-  //   })
-  //   .listen();
-  // folder1.add(params, "countMult", 10, 100).onChange(() => {
-  //   for (let i = 0; i < storyStd.sceneObjects.length; i++) {
-  //     storyStd.sceneObjects[i].particleParams.particleCntMult = params.countMult;
-  //     storyStd.sceneObjects[i].zoomResample(camera);
-  //   }
-  // });
-
   gui.add(params, "changeBG");
   // gui.add(params, "animate");
   gui.close();
 
   ///////////////////// Build scene, add objects
+
+  const stage01 = new storyStage(scene, camera, "covidStory/data/stage01.json");
+  // const stage02 = new storyStage(scene, camera, "covidStory/data/stage02.json");
+
+  currentStage = stage01;
 }
 
 //---------------- Animate --------------------------
@@ -200,34 +191,7 @@ function animate(time) {
     camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
     camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
   }
-  // camera.lookAt(scene.position);
-
-  // if (animationProgress >= 0 && animationProgress <= 1) {
-  //   let c = new THREE.Vector3();
-  //   c.lerpVectors(stage01.cameraStart, stage01.cameraEnd, animationProgress);
-  //   camera.position.x = c.x;
-  //   camera.position.y = c.x;
-  //   camera.position.z = c.z;
-  //   // camera.lookAt(scene.position);
-  //   camera.updateMatrixWorld();
-  // }
-  // }
-  // let cameraDirection = new THREE.Vector3();
-  // camera.getWorldDirection(cameraDirection);
-
-  // let direction = new THREE.Vector3();
-  // direction.subVectors(scene.position, camera.position);
-
-  // camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
-  // camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
-
-  if (stage01.ready) stage01.update(animationProgress);
-
-  // if (freeCam) {
-
-  //   camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
-  //   camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
-  // }
+  if (currentStage.ready) currentStage.update(animationProgress);
 
   // plusZ += (0 - plusZ) * 0.05;
   // if (!ambParticles.flying) {

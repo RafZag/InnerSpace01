@@ -6,13 +6,13 @@ class ambientParticles {
   direction = new THREE.Vector3(0, 0, 1);
   speed = 6;
   birthRate = 20;
-  particleCount = 5000;
+  particleCount = 3000;
   frontBirthDistane = -150;
   backBirthDistane = 20;
   flying = false;
   spinRate = 0.0001;
 
-  pointSpread = 200;
+  pointSpread = 100;
 
   particles; // THREE.Points(); - main object added to scene
   vertices = []; // particles verts
@@ -64,7 +64,7 @@ class ambientParticles {
     particlesParticlesGeo.setAttribute("direction", new THREE.Float32BufferAttribute(this.directions, 3));
 
     let mat = new THREE.PointsMaterial({
-      size: 2,
+      size: 1,
       sizeAttenuation: true,
       map: sprite,
       depthTest: false,
