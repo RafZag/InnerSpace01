@@ -268,17 +268,6 @@ class particleObject {
     let rotVec = new THREE.Vector3();
     rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
     if (p < 1) this.setRotation(rotVec);
-    // if (p == 1) this.setRotation(this.targetRotation);
-
-    // console.log(performance.now());
-    // this.spin(this.spinRate);
-    // if (this.scale != this.objectContainer.scale.x) {
-    //   const sc = this.scale - this.objectContainer.scale.x;
-    //   this.objectContainer.scale.x += sc * 0.2;
-    //   this.objectContainer.scale.y += sc * 0.2;
-    //   this.objectContainer.scale.z += sc * 0.2;
-    // }
-    // this.float(this.floatRate);
 
     this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
     this.uniformsValues["wobble"].value = this.particleParams.particlesWobble;

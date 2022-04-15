@@ -3,6 +3,7 @@ import { particleObject } from "../particleObject.js";
 import { ambientParticles } from "../ambientParticles.js";
 
 class storyStage {
+  name;
   sceneObjects = [];
   stageContainer = new THREE.Object3D();
   startPosition = new THREE.Vector3();
@@ -18,6 +19,8 @@ class storyStage {
   parentContainer;
   dataUrl;
   ready = false;
+  visible = false;
+  complete = false;
   loadedData;
   tCell;
   bars;
@@ -47,6 +50,7 @@ class storyStage {
   }
 
   buildScene() {
+    this.name = this.loadedData.name;
     this.ambParticles = new ambientParticles(this.stageContainer);
     // this.camera.position.z = this.loadedData.camera.start.z;
 
@@ -94,26 +98,50 @@ class storyStage {
       }.bind(this)
     );
 
+    this.stageContainer.visible = false;
     this.parentContainer.add(this.stageContainer);
     this.ready = true;
   }
+  show() {
+    this.stageContainer.visible = true;
+    this.visible = true;
+    // console.log("show scene: " + this.name);
+  }
+
+  hide() {
+    this.stageContainer.visible = false;
+    this.visible = false;
+    // console.log("hide scene: " + this.name);
+  }
+
+  reset() {
+    for (let i = 0; i < this.sceneObjects.length; i++) {
+      this.sceneObjects[i].setPosition(this.sceneObjects[i].startPosition);
+      this.sceneObjects[i].setRotation(this.sceneObjects[i].startRotation);
+      this.sceneObjects[i].setScale(this.sceneObjects[i].startScale);
+    }
+    this.complete = false;
+    console.log("scene reset");
+  }
 
   update(animProgress) {
-    this.ambParticles.update();
+    if (this.visible) {
+      this.ambParticles.update();
 
-    if (animProgress >= 1) animProgress = 1;
+      if (animProgress >= 1) animProgress = 1;
 
-    let posVec = new THREE.Vector3();
-    posVec.lerpVectors(this.startPosition, this.targetPosition, animProgress);
+      let posVec = new THREE.Vector3();
+      posVec.lerpVectors(this.startPosition, this.targetPosition, animProgress);
 
-    let rotVec = new THREE.Vector3();
-    rotVec.lerpVectors(this.startRotation, this.targetRotation, animProgress);
+      let rotVec = new THREE.Vector3();
+      rotVec.lerpVectors(this.startRotation, this.targetRotation, animProgress);
 
-    this.stageContainer.position.set(posVec.x, posVec.y, posVec.z);
-    this.stageContainer.rotation.set(rotVec.x, rotVec.y, rotVec.z);
+      this.stageContainer.position.set(posVec.x, posVec.y, posVec.z);
+      this.stageContainer.rotation.set(rotVec.x, rotVec.y, rotVec.z);
 
-    for (let i = 0; i < this.sceneObjects.length; i++) {
-      this.sceneObjects[i].update(animProgress);
+      for (let i = 0; i < this.sceneObjects.length; i++) {
+        this.sceneObjects[i].update(animProgress);
+      }
     }
   }
 }

@@ -17,6 +17,7 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 
 let camera, scene, renderer, stats, controls;
 let currentStage;
+let nextStage;
 let animationProgress = 0;
 
 let plusZ = 0;
@@ -30,6 +31,8 @@ let freeCam = false;
 let mouse = new THREE.Vector3(0, 0, 0.5);
 let camTargetRotX = 0;
 let camTargetRotY = 0;
+
+let msgDiv = document.getElementById("msg");
 
 let camPosition = new THREE.Vector3(0, 0, 60);
 
@@ -68,13 +71,14 @@ const params = {
 
 function startAnim(e) {
   if (e.key == " ") {
-    // freeCam = false;
-    if (params.animTween == 1) {
-      animateTween.to({ animTween: 0 }, 3000).start();
-    }
-    if (params.animTween == 0) {
-      animateTween.to({ animTween: 1 }, 3000).start();
-    }
+    // // freeCam = false;
+    // if (params.animTween == 1) {
+    //   animateTween.to({ animTween: 0 }, 3000).start();
+    // }
+    // if (params.animTween == 0) {
+    if (!currentStage.complete) animateTween.to({ animTween: 1 }, 3000).start();
+    else switchScene();
+    // }
   }
 }
 
@@ -83,6 +87,7 @@ let animateTween = new TWEEN.Tween(params)
   .easing(tween)
   .onComplete(() => {
     // freeCam = true;
+    currentStage.complete = true;
   })
   .onUpdate(() => {
     animationProgress = params.animTween;
@@ -164,21 +169,24 @@ function init() {
   ///////////////////// Build scene, add objects
 
   const stage01 = new storyStage(scene, camera, "covidStory/data/stage01.json");
-  // const stage02 = new storyStage(scene, camera, "covidStory/data/stage02.json");
+  const stage02 = new storyStage(scene, camera, "covidStory/data/stage02.json");
 
   currentStage = stage01;
+  nextStage = stage02;
 }
 
 //---------------- Animate --------------------------
 
 function animate(time) {
+  msgDiv.innerHTML = "animation progress: " + animationProgress.toFixed(2);
+  if (currentStage.ready && !currentStage.visible) currentStage.show();
   if (!freeCam) {
     plusZ += (0 - plusZ) * 0.05;
 
     // let animx = animationProgress;
     // animationProgress += plusZ * (-(animx * animx) * 0.8 + 1);
 
-    if (animationProgress > 1) {
+    if (animationProgress >= 1) {
       plusZ = 0;
       animationProgress = 1;
     }
@@ -253,6 +261,21 @@ function render() {
 
   renderer.render(scene, camera);
 }
+
+// ----------------------------------------------------------------
+
+function switchScene() {
+  let tmp = currentStage;
+  currentStage = nextStage;
+  nextStage = tmp;
+  nextStage.hide();
+  currentStage.reset();
+  currentStage.show();
+
+  params.animTween = 0;
+  animationProgress = 0;
+}
+
 // ----------------------Event handlers----------------------------
 
 function onDocumentMouseMove(event) {
